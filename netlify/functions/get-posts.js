@@ -23,7 +23,9 @@ exports.handler = async (event, context) => {
         });
     } else {
         response.statusCode = 500;
-        response.body = 'Something bad happens';
+        response.body = JSON.stringify({
+            data: 'Something bad happens'
+        });
     }
 
     return response;
