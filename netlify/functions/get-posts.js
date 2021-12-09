@@ -5,7 +5,7 @@ exports.handler = async (event, context) => {
         {
             method: `get`,
             responseType: "json"
-        }).then(response => response.data)
+        }).then(response => response.data.data)
         .catch(error => console.error(error));
 
     if (data !== null) {
