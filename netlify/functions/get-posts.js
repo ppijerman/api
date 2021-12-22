@@ -85,9 +85,12 @@ exports.handler = async (event, context) => {
                             method: `get`,
                             responseType: `json`
                         }).then(refreshResponse => {
+                            // TODO check if refreshResponse is properly formatted, else cancel the operation in this part and print error to console
                             const encryptedNewToken = CryptoJS.AWS.encrypt(refreshResponse.data['access_token'], process.env.PASSKEY);
-                            conn.query('INSERT INTO ? (access_token) VALUES (?)', [tableName, encryptedNewToken])
-                                .then()
+                            conn.query('INSERT INTO ? (access_token, timeout) VALUES (?, ?)', [tableName, encryptedNewToken, refreshResponse['expires_in']])
+                                .then(res => {
+                                    // TODO give output if the write operation is successful, else print error in console
+                                })
                         }).catch(err => console.error(`Unable to get refresh access token! Error: ${err.toString()}`));
                     } else {
                         console.warn(`Access token is not updated as the timestamp is not in the legal value (${tstamp.toLocaleString('de-DE')})`);
