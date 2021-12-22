@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Instagram Posts</title>
+    <style>
+        #instagram-posts {
+            display: flex;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        fetch('https://youthful-kilby-a7e54e.netlify.app/.netlify/functions/get-posts', {method: 'GET'}).then(data => data.json())
+            .then(res => {
+                console.log(res);
+
+                for (const i in [0, 1, 2]) {
+                    document.querySelector('#instagram-posts').innerHTML = `${document.querySelector('#instagram-posts').innerHTML}` +
+                        `<div id="instagram-posts-row-${i}" class="instagram-posts-row">`;
+
+                    for (const j in [0, 1, 2]) {
+                        const content = res.data[Number(i * 3) + Number(j)];
+                        let photo = content['media_url'];
+                        if (content['media_type'] === 'VIDEO') {
+                            photo = content['thumbnail_url'];
+                        }
+
+                        document.querySelector(`#instagram-posts-row-${i}`).innerHTML = `${document.querySelector(`#instagram-posts-row-${i}`).innerHTML}` +
+                            `<div class="instagram-posts" style="background: url(${photo})">` +
+                                `<span>${new Date(content['timestamp']).toLocaleDateString('de-DE')}</span>` +
+                            `</div>`;
+                    }
+
+                    document.querySelector('#instagram-posts').innerHTML = `${document.querySelector('#instagram-posts').innerHTML}` +
+                        `</div>`;
+                }
+            }).catch(err => {
+            console.error(err)
+        })
+    </script>
+</head>
+<body>
+<div id="instagram-posts">
+</div>
+</body>
+</html>
