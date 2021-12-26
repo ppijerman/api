@@ -49,8 +49,9 @@ exports.handler = async (event, context) => {
         compress: process.env.COMPRESSION_ENABLED === 'true',
         connectTimeout: process.env.TIMEOUT || 2000
     }).then(conn => {
-        const res = conn.query('SELECT * FROM ? WHERE tsamp = (SELECT MAX(tstamp) FROM ?)',
-            [tableName, tableName])
+        const res = conn.query(`SELECT *
+                                FROM ${tableName}
+                                WHERE tstamp = (SELECT MAX(tstamp) FROM ${tableName})`)
             .then(rows => {
                 console.log('Got data from database');
 
@@ -65,11 +66,13 @@ exports.handler = async (event, context) => {
                     const data = response.data.data
 
                     if (data !== null) {
+                        console.log('Got data: ', data);
                         response.statusCode = 200;
                         response.body = JSON.stringify({
                             data: data
                         });
                     } else {
+                        console.error('Something bad happens');
                         response.statusCode = 500;
                         response.body = JSON.stringify({
                             data: 'Something bad happens'
@@ -78,19 +81,22 @@ exports.handler = async (event, context) => {
 
                     // Check if we shall update the access token in the database. We only allowed to update the access token if
                     // the access token is not younger than 24 hours and not older than defined timeout
-                    if (tstamp !== null
-                        && tstamp.getTime() - (24 * 60 * 60 * 1000) > Date.now()
-                        && tstamp.getTime() - (60 * 24 * 60 * 60 * 1000) < tstamp.getTime() + parseInt(timeout, 10) * 1000) {
+                    if (tstamp === null || (tstamp.getTime() + (24 * 60 * 60 * 1000) < Date.now() && Date.now < tstamp.getTime() + parseInt(timeout, 10) * 1000)) {
                         axios.get(`https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${token}`, {
                             method: `get`,
                             responseType: `json`
                         }).then(refreshResponse => {
                             // TODO check if refreshResponse is properly formatted, else cancel the operation in this part and print error to console
-                            const encryptedNewToken = CryptoJS.AWS.encrypt(refreshResponse.data['access_token'], process.env.PASSKEY);
-                            conn.query('INSERT INTO ? (access_token, timeout) VALUES (?, ?)', [tableName, encryptedNewToken, refreshResponse['expires_in']])
-                                .then(res => {
-                                    // TODO give output if the write operation is successful, else print error in console
-                                })
+                            const encryptedNewToken = CryptoJS.AES.encrypt(refreshResponse.data['access_token'], process.env.PASSKEY);
+                            try {
+                                conn.query(`INSERT INTO ${tableName} (access_token, timeout) VALUES (?, ?)`,
+                                    [encryptedNewToken.toString(), refreshResponse.data['expires_in']])
+                                    .then(res => {
+                                        // TODO give output if the write operation is successful, else print error in console
+                                    })
+                            } catch (e) {
+                                console.error('Got error when refreshing data in database with message: ', e);
+                            }
                         }).catch(err => console.error(`Unable to get refresh access token! Error: ${err.toString()}`));
                     } else {
                         console.warn(`Access token is not updated as the timestamp is not in the legal value (${tstamp.toLocaleString('de-DE')})`);
