@@ -9,7 +9,7 @@ exports.handler = async (event, context) => {
         }
     }
 
-    const data = await axios.get(`https://graph.instagram.com/me/media?access_token=${process.env.ACCESS_TOKEN}&limit=${process.env.LIMIT || 9}&fields=media_type,media_url,timestamp,thumbnail_url`,
+    const data = await axios.get(`https://graph.instagram.com/me/media?access_token=${process.env.ACCESS_TOKEN}&limit=${process.env.LIMIT || 9}&fields=media_type,media_url,timestamp,thumbnail_url,permalink`,
         {
             method: `get`,
             responseType: `json`
