@@ -86,7 +86,6 @@ exports.handler = async (event, context) => {
                             responseType: `json`
                         }).then(refreshResponse => {
                             // TODO check if refreshResponse is properly formatted, else cancel the operation in this part and print error to console
-                            console.log(`Got refresh token ${refreshResponse.data['access_token']}`);
                             const encryptedNewToken = CryptoJS.AES.encrypt(refreshResponse.data['access_token'], process.env.PASSKEY);
                             try {
                                 conn.query(`INSERT INTO ${tableName} (access_tokens, timeout)
