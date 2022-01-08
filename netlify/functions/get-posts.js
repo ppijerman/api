@@ -19,8 +19,9 @@ exports.getPropertyFromDataOrDefault = (data, objKey, fallback = null) => {
             && key !== null
             && key !== '') {
             try {
-                return CryptoJS.AES.decrypt(datum[objKey], key);
-            } catch (_) {
+                return CryptoJS.AES.decrypt(datum[objKey], key).toString(CryptoJS.enc.Utf8);
+            } catch (err) {
+                console.warn(`Using fallback value when decrypting ${objKey} with reason ${err}`);
                 return fallback;
             }
         }
@@ -54,9 +55,7 @@ exports.handler = async (event, context) => {
                            FROM ${tableName}
                            WHERE tstamp = (SELECT MAX(tstamp) FROM ${tableName})`)
             .then(rows => {
-                console.log('Got data from database');
-
-                const token = this.getPropertyFromDataOrDefault(rows, 'access_token', process.env.ACCESS_TOKEN);
+                const token = this.getPropertyFromDataOrDefault(rows, 'access_tokens', process.env.ACCESS_TOKEN);
                 const tstamp = rows.length > 0 ? new Date(rows[0]['tstamp']) : null;
                 const timeout = rows.length > 0 ? new Date(rows[0]['timeout']) : '0';
 
@@ -87,12 +86,12 @@ exports.handler = async (event, context) => {
                             responseType: `json`
                         }).then(refreshResponse => {
                             // TODO check if refreshResponse is properly formatted, else cancel the operation in this part and print error to console
+                            console.log(`Got refresh token ${refreshResponse.data['access_token']}`);
                             const encryptedNewToken = CryptoJS.AES.encrypt(refreshResponse.data['access_token'], process.env.PASSKEY);
-                            console.log(encryptedNewToken.toString().length);
                             try {
                                 conn.query(`INSERT INTO ${tableName} (access_tokens, timeout)
                                             VALUES (?, ?)`,
-                                    ['test', refreshResponse.data['expires_in']])
+                                    [encryptedNewToken.toString(), refreshResponse.data['expires_in']])
                                     .then(res => {
                                         // TODO give output if the write operation is successful, else print error in console
                                     })
