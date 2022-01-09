@@ -5,8 +5,7 @@ const mariadb = require('mariadb');
 exports.constructResponse = (res, code = 200, message) => {
     console.error(message);
     res.statusCode = code;
-    res.data = message;
-    return res;
+    return message;
 }
 
 exports.getPropertyFromDataOrDefault = (data, objKey, fallback = null) => {
