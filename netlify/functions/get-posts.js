@@ -5,7 +5,7 @@ const mariadb = require('mariadb');
 exports.constructResponse = (res, code = 200, message) => {
     console.error(message);
     res.statusCode = code;
-    res.body = message;
+    res.data = message;
     return res;
 }
 
