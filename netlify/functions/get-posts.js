@@ -112,5 +112,7 @@ exports.handler = async (event, context) => {
 
     }).catch(err => this.constructResponse(response, 500, `Cannot make connection with database server with message: ${err.toString()}`));
 
+    console.log(response);
+
     return response;
 }
