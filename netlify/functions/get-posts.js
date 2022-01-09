@@ -5,6 +5,7 @@ const mariadb = require('mariadb');
 exports.constructErrorResponse = (res, code = 200, message) => {
     console.error(message);
     res.statusCode = code;
+    res.error = message;
     return {error: message};
 }
 
