@@ -2,10 +2,10 @@ const axios = require('axios').default;
 const CryptoJS = require('crypto-js');
 const mariadb = require('mariadb');
 
-exports.constructResponse = (res, code = 200, message) => {
+exports.constructErrorResponse = (res, code = 200, message) => {
     console.error(message);
     res.statusCode = code;
-    return message;
+    return {error: message};
 }
 
 exports.getPropertyFromDataOrDefault = (data, objKey, fallback = null) => {
@@ -105,11 +105,11 @@ exports.handler = async (event, context) => {
                     }
 
                     return data;
-                }).catch(err => this.constructResponse(response, 500, `Unable to get data from the API with message: ${err.toString()}`));
+                }).catch(err => this.constructErrorResponse(response, 500, `Unable to get data from the API with message: ${err.toString()}`));
 
-            }).catch(err => this.constructResponse(response, 500, `Unable to get data from the database for getting token with message: ${err.toString()}`));
+            }).catch(err => this.constructErrorResponse(response, 500, `Unable to get data from the database for getting token with message: ${err.toString()}`));
 
-    }).catch(err => this.constructResponse(response, 500, `Cannot make connection with database server with message: ${err.toString()}`));
+    }).catch(err => this.constructErrorResponse(response, 500, `Cannot make connection with database server with message: ${err.toString()}`));
 
     console.log(response);
 
