@@ -80,7 +80,7 @@ exports.handler = async (event, context) => {
 
                     // Check if we shall update the access token in the database. We only allowed to update the access token if
                     // the access token is not younger than 24 hours and not older than defined timeout
-                    if (tstamp === null || (tstamp.getTime() + (24 * 60 * 60 * 1000) < Date.now() && Date.now < tstamp.getTime() + parseInt(timeout, 10) * 1000)) {
+                    if (tstamp === null || (tstamp.getTime() + (24 * 60 * 60 * 1000) < Date.now() && Date.now() < tstamp.getTime() + parseInt(timeout, 10) * 1000)) {
                         axios.get(`https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${token}`, {
                             method: `get`,
                             responseType: `json`
