@@ -102,7 +102,7 @@ exports.handler = async (event, context) => {
                         }).catch(err => console.error(`Unable to get refresh access token! Error: ${err.toString()}`));
                     } else {
                         conn.destroy();
-                        console.warn(`Access token is not updated as the timestamp is not in the legal value (${tstamp.toLocaleString('de-DE')})`);
+                        console.warn(`Access token is not updated as the timestamp is not in the legal value (${tstamp.toLocaleString('de-DE')} with earliest change ${new Date(tstamp.getTime() + (24 * 60 * 60 * 1000)).toLocaleString('de-DE')} and latest ${new Date(tstamp.getTime() + parseInt(timeout, 10) * 1000).toLocaleString('de-DE')})`);
                     }
 
                     return data;
